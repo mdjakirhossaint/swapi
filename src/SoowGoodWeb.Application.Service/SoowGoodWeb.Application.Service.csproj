@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SoowGoodWeb.Application.Contracts\SoowGoodWeb.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SoowGoodWeb.Core.Service\SoowGoodWeb.Core.Service.csproj" />
+    <ProjectReference Include="..\SoowGoodWeb.Domain.Service\SoowGoodWeb.Domain.Service.csproj" />
+    <ProjectReference Include="..\SoowGoodWeb.Domain\SoowGoodWeb.Domain.csproj" />
+  </ItemGroup>
+
+  <!--<ItemGroup>
+    <ProjectReference Include="..\SoowGood.Core.Service\SoowGoodWeb.Core.Service.csproj" />
+    <ProjectReference Include="..\SoowGoodWeb.Core.Service\SoowGoodWeb.Core.Service.csproj" />
+    <ProjectReference Include="..\SoowGoodWeb.Domain.Service\SoowGoodWeb.Domain.Service.csproj" />
+  </ItemGroup>-->
+
+</Project>

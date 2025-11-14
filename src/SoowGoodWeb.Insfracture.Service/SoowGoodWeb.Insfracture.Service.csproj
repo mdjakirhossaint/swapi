@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Dapper" Version="2.1.35" />
+		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.1" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+		<PackageReference Include="Nancy" Version="2.0.0" />
+		<PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SoowGoodWeb.Core.Service\SoowGoodWeb.Core.Service.csproj" />
+	  <ProjectReference Include="..\SoowGoodWeb.Domain.Service\SoowGoodWeb.Domain.Service.csproj" />
+	</ItemGroup>
+
+	<!--<ItemGroup>
+	  <ProjectReference Include="..\SoowGood.Core.Service\SoowGoodWeb.Core.Service.csproj" />
+	  <ProjectReference Include="..\SoowGood.Domain.Service\SoowGoodWeb.Domain.Service.csproj" />
+	  <ProjectReference Include="..\SoowGoodWeb.Core.Service\SoowGoodWeb.Core.Service.csproj" />
+	  <ProjectReference Include="..\SoowGoodWeb.Domain.Service\SoowGoodWeb.Domain.Service.csproj" />
+	</ItemGroup>-->
+	
+</Project>

@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\SoowGoodWeb.Application.Service\SoowGoodWeb.Application.Service.csproj" />
+	  <ProjectReference Include="..\SoowGoodWeb.Domain.Service\SoowGoodWeb.Domain.Service.csproj" />
+	  <ProjectReference Include="..\SoowGoodWeb.Insfracture.Service\SoowGoodWeb.Insfracture.Service.csproj" />
+	</ItemGroup>
+	<!--<ItemGroup>
+	  <ProjectReference Include="..\SoowGood.Domain.Service\SoowGoodWeb.Domain.Service.csproj" />
+	  <ProjectReference Include="..\SoowGood.Insfracture.Service\SoowGoodWeb.Insfracture.Service.csproj" />
+	  <ProjectReference Include="..\SoowGoodWeb.Application.Service\SoowGoodWeb.Application.Service.csproj" />
+	  <ProjectReference Include="..\SoowGoodWeb.Domain.Service\SoowGoodWeb.Domain.Service.csproj" />
+	  <ProjectReference Include="..\SoowGoodWeb.Insfracture.Service\SoowGoodWeb.Insfracture.Service.csproj" />
+	  <ProjectReference Include="..\SoowGood_New_Backend.Application.Service\SoowGoodWeb.Application.Service.csproj" />
+	</ItemGroup>-->
+
+</Project>

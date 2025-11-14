@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RestSharp" Version="112.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SoowGoodWeb.Core.Service\SoowGoodWeb.Core.Service.csproj" />
+    <ProjectReference Include="..\SoowGoodWeb.Domain\SoowGoodWeb.Domain.csproj" />
+  </ItemGroup>
+
+  <!--<ItemGroup>
+    <ProjectReference Include="..\SoowGood.Core.Service\SoowGoodWeb.Core.Service.csproj" />
+    <ProjectReference Include="..\SoowGoodWeb.Core.Service\SoowGoodWeb.Core.Service.csproj" />
+    <ProjectReference Include="..\SoowGoodWeb.Domain\SoowGoodWeb.Domain.csproj" />
+  </ItemGroup>-->
+
+</Project>
