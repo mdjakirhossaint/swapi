@@ -1,4 +1,5 @@
 ﻿using SoowGoodWeb.DtoModels;
+using SoowGoodWeb.EntityFrameworkCore;
 using SoowGoodWeb.InputDto;
 using SoowGoodWeb.Interfaces;
 using SoowGoodWeb.Models;
@@ -13,22 +14,32 @@ namespace SoowGoodWeb.Services
     {
         private readonly IRepository<DoctorChamber> _doctorChamberRepository;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
-        public DoctorChamberService(IRepository<DoctorChamber> doctorChamberRepository, IUnitOfWorkManager unitOfWorkManager)
+        private readonly SoowGoodWebDbContext _dbContext;
+        public DoctorChamberService(IRepository<DoctorChamber> doctorChamberRepository, IUnitOfWorkManager unitOfWorkManager, SoowGoodWebDbContext dbContext)
         {
             _doctorChamberRepository = doctorChamberRepository;
 
             _unitOfWorkManager = unitOfWorkManager;
+            _dbContext = dbContext;
         }
         public async Task<DoctorChamberDto> CreateAsync(DoctorChamberInputDto input)
         {
+            // Map DTO to entity
             var newEntity = ObjectMapper.Map<DoctorChamberInputDto, DoctorChamber>(input);
 
-            var doctorChamber = await _doctorChamberRepository.InsertAsync(newEntity);
+            // Add entity to DbSet
+            var entityEntry = await _dbContext.SgDoctorChambers.AddAsync(newEntity);
 
-            //await _unitOfWorkManager.Current.SaveChangesAsync();
+            // Save changes immediately
+            await _dbContext.SaveChangesAsync();
 
-            return ObjectMapper.Map<DoctorChamber, DoctorChamberDto>(doctorChamber);
+            // Map the saved entity to DTO
+            var result = ObjectMapper.Map<DoctorChamber, DoctorChamberDto>(entityEntry.Entity);
+
+            return result;
         }
+
+
 
         public async Task<DoctorChamberDto> GetAsync(int id)
         {

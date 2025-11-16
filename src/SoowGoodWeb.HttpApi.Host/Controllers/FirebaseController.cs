@@ -13,6 +13,7 @@ using SoowGoodWeb.Domain.Service.Repositories;
 using SoowGoodWeb.DtoModels;
 using SoowGoodWeb.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -216,12 +217,38 @@ namespace SoowGoodWeb.Controllers
                 // --------------------------------------------------------------------
                 // 2️⃣ EXISTING USER → LOGIN
                 // --------------------------------------------------------------------
+                string loginType = "unknown";
+
+                // Check if claim exists
+                if (decoded.Claims.TryGetValue("firebase", out var firebaseObj) && firebaseObj != null)
+                {
+                    // firebaseObj is JObject, cast safely
+                    var firebaseClaim = firebaseObj as Newtonsoft.Json.Linq.JObject;
+
+                    if (firebaseClaim != null && firebaseClaim.TryGetValue("sign_in_provider", out var providerToken))
+                    {
+                        loginType = providerToken.ToString(); // e.g., "password", "phone", "google.com"
+
+                        // Map Firebase providers to your friendly names
+                        loginType = loginType switch
+                        {
+                            "password" => "email",
+                            "phone" => "phone",
+                            "google.com" => "google",
+                            "facebook.com" => "facebook",
+                            _ => loginType
+                        };
+                    }
+                }
+
                 var login = new LoginResponseDto
                 {
                     AccessToken = "",
                     RefreshToken = "",
                     UserId = IsExistingUser.Id,
                     UserName = IsExistingUser.UserName,
+                    UserEmail= IsExistingUser.Email.ToString(),
+                    LoginType = loginType,
                     Role = doctorRoleId.ToString(),
                     Success = true,
                     Message = "Login successful."
