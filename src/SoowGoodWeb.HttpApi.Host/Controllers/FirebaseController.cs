@@ -11,6 +11,8 @@ using SoowGoodWeb.Domain.Service.Models.UserInfo;
 using SoowGoodWeb.Domain.Service.Models.UserRole;
 using SoowGoodWeb.Domain.Service.Repositories;
 using SoowGoodWeb.DtoModels;
+using SoowGoodWeb.InputDto;
+using SoowGoodWeb.Interfaces;
 using SoowGoodWeb.Services;
 using System;
 using System.Collections.Generic;
@@ -119,13 +121,12 @@ namespace SoowGoodWeb.Controllers
                     return Ok(response);
                 }
 
-                // ✅ Verify ID token
+                // Verify Firebase ID token
                 FirebaseToken decoded = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(request.IdToken);
 
-                // ✅ Extract user info safely
+                // Extract user info
                 decoded.Claims.TryGetValue("email", out var emailObj);
                 decoded.Claims.TryGetValue("name", out var nameObj);
-                decoded.Claims.TryGetValue("picture", out var pictureObj);
 
                 string? email = emailObj?.ToString();
                 string? name = nameObj?.ToString();
@@ -137,20 +138,40 @@ namespace SoowGoodWeb.Controllers
                     return Ok(response);
                 }
 
-                var IsExistingUser = await _userService.GetUserByUserName(email);
-                var role = await _userRoleService.GetAllRoles();
-                var doctorRoleId = role.Result.Where(x => x.Name.ToLowerInvariant().Contains("doctor"))
-                                              .Select(x => x.Id)
-                                              .First();
+                // Check if user exists
+                var existingUser = await _userService.GetUserByUserName(email);
 
-                // --------------------------------------------------------------------
-                // 1️⃣ IF USER DOES NOT EXIST → CREATE
-                // --------------------------------------------------------------------
-                if (IsExistingUser == null)
+                // Get doctor role
+                var roleList = await _userRoleService.GetAllRoles();
+                var doctorRoleId = roleList.Result
+                    .First(x => x.Name.ToLowerInvariant().Contains("doctor"))
+                    .Id;
+
+                // Determine login type from Firebase claims (once)
+                string loginType = "unknown";
+                if (decoded.Claims.TryGetValue("firebase", out var firebaseObj) && firebaseObj != null)
                 {
-                    var hashedPassword = _passwordHasherService.HashPassword("Prescripto@Zak.Com1431");
+                    var firebaseClaim = firebaseObj as Newtonsoft.Json.Linq.JObject;
+                    if (firebaseClaim != null && firebaseClaim.TryGetValue("sign_in_provider", out var providerToken))
+                    {
+                        loginType = providerToken.ToString()?.ToLower() switch
+                        {
+                            "password" => "email",
+                            "phone" => "phone",
+                            "google.com" => "google",
+                            "facebook.com" => "facebook",
+                            _ => "unknown"
+                        };
+                    }
+                }
 
-                    var user = new UserInsertDto
+                LoginResponseDto login;
+
+                if (existingUser == null)
+                {
+                    // Create new user
+                    var hashedPassword = _passwordHasherService.HashPassword("Prescripto@Zak.Com1431");
+                    var newUser = new UserInsertDto
                     {
                         Id = Guid.NewGuid(),
                         UserName = email,
@@ -167,8 +188,7 @@ namespace SoowGoodWeb.Controllers
                         SecurityStamp = Guid.NewGuid().ToString(),
                     };
 
-                    var userInsertResponse = await _userCommandService.Insert(user);
-
+                    var userInsertResponse = await _userCommandService.Insert(newUser);
                     if (!userInsertResponse.Result)
                     {
                         response.is_success = false;
@@ -177,85 +197,61 @@ namespace SoowGoodWeb.Controllers
                         return Ok(response);
                     }
 
-                    // Assign Role
+                    // Insert doctor profile
+                    var doctorProfileInsert = new DoctorProfileInputDto
+                    {
+                        UserId = newUser.Id,
+                        FullName = name ?? "",
+                        Email = email,
+                        MobileNo = newUser.PhoneNumber,
+                        CreationTime = DateTime.Now,
+                        IsActive = true,
+                        IsOnline = false,
+                        IsDeleted = false
+                    };
+                    await _userCommandService.DoctorProfileInsert(doctorProfileInsert);
+
+                    // Assign role
                     var userRole = new UserRoleInsertDto
                     {
-                        UserId = user.Id,
+                        UserId = newUser.Id,
                         RoleId = doctorRoleId
                     };
+                    await _userRoleService.InsertUserRole(userRole);
 
-                    var roleResponse = await _userRoleService.InsertUserRole(userRole);
-
-                    if (!roleResponse.Result)
+                    // Build response directly (no implicit operator)
+                    login = new LoginResponseDto
                     {
-                        // User created but role failed
-                        LoginResponseDto loginReturn = new LoginResponseDto
-                        {
-                            AccessToken = "",
-                            RefreshToken = "",
-                            UserId = user.Id,
-                            UserName = user.UserName,
-                            Role = doctorRoleId.ToString(),
-                            Success = true,
-                            Message = "User created but role assignment failed."
-                        };
-
-                        response.results = loginReturn;
-                        response.is_success = false;
-                        response.message = roleResponse.Message;
-                        return Ok(response);
-                    }
-
-                    // Final success for new user
-                    response.is_success = true;
-                    response.message = "User created and assigned to roles successfully.";
-                    response.status_code = 200;
-
-                    return Ok(response);
+                        AccessToken = null,
+                        RefreshToken = null,
+                        UserId = newUser.Id,
+                        UserName = newUser.UserName,
+                        UserEmail = newUser.Email,
+                        LoginType = loginType,
+                        Role = doctorRoleId.ToString(),
+                        Success = true,
+                        Message = "User created and login successful"
+                    };
                 }
-
-                // --------------------------------------------------------------------
-                // 2️⃣ EXISTING USER → LOGIN
-                // --------------------------------------------------------------------
-                string loginType = "unknown";
-
-                // Check if claim exists
-                if (decoded.Claims.TryGetValue("firebase", out var firebaseObj) && firebaseObj != null)
+                else
                 {
-                    // firebaseObj is JObject, cast safely
-                    var firebaseClaim = firebaseObj as Newtonsoft.Json.Linq.JObject;
-
-                    if (firebaseClaim != null && firebaseClaim.TryGetValue("sign_in_provider", out var providerToken))
+                    // Existing user response
+                    login = new LoginResponseDto
                     {
-                        loginType = providerToken.ToString(); // e.g., "password", "phone", "google.com"
-
-                        // Map Firebase providers to your friendly names
-                        loginType = loginType switch
-                        {
-                            "password" => "email",
-                            "phone" => "phone",
-                            "google.com" => "google",
-                            "facebook.com" => "facebook",
-                            _ => loginType
-                        };
-                    }
+                        AccessToken = null,
+                        RefreshToken = null,
+                        UserId = existingUser.Id,
+                        UserName = existingUser.UserName,
+                        UserEmail = existingUser.Email,
+                        LoginType = loginType,
+                        Role = doctorRoleId.ToString(),
+                        Success = true,
+                        Message = "Login successful"
+                    };
                 }
-
-                var login = new LoginResponseDto
-                {
-                    AccessToken = "",
-                    RefreshToken = "",
-                    UserId = IsExistingUser.Id,
-                    UserName = IsExistingUser.UserName,
-                    UserEmail= IsExistingUser.Email.ToString(),
-                    LoginType = loginType,
-                    Role = doctorRoleId.ToString(),
-                    Success = true,
-                    Message = "Login successful."
-                };
 
                 response.is_success = true;
-                response.message = "Token is valid ✅";
+                response.message = "Login successful";
                 response.status_code = 200;
                 response.results = login;
 
@@ -276,6 +272,7 @@ namespace SoowGoodWeb.Controllers
                 return StatusCode(500, response);
             }
         }
+
 
     }
 

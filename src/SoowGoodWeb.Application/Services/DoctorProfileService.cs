@@ -1852,6 +1852,18 @@ namespace SoowGoodWeb.Services
 
             return ObjectMapper.Map<DoctorProfile, DoctorProfileDto>(item);
         }
+
+
+        public async Task<DoctorProfileDto> GetByUserEmailAsync(string emailAddress)
+        {
+            var dProfiles = await _doctorProfileRepository.WithDetailsAsync(s => s.Speciality);
+            var item = dProfiles.Where(x => x.Email == emailAddress).FirstOrDefault();
+
+            return ObjectMapper.Map<DoctorProfile, DoctorProfileDto>(item);
+        }
+
+
+
         public async Task<List<DoctorProfileDto>> GetListDoctorListByAdminAsync()
         {
             List<DoctorProfileDto>? result = null;
