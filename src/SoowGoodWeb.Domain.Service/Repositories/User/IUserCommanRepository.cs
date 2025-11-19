@@ -5,6 +5,7 @@ using SoowGood.Domain.Service.Models.UserInfo;
 using SoowGood.Domain.Service.Repositories.BaseInterface;
 using SoowGoodWeb.Core.Service.GenericModels;
 using SoowGoodWeb.Domain.Service.Models.UserInfo;
+using SoowGoodWeb.InputDto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,7 @@ namespace SoowGood.Domain.Service.Repositories.User
     {
         Task<Response<int>> InsertOtp(InsertOtpDto otp);
         Task<Response<int>> UpdateUserPassword(UserPasswordUpdateDto user);
+        Task<Response<DoctorProfileInputDto>> DoctorProfileInsert(DoctorProfileInputDto user);
+
     }
 }
