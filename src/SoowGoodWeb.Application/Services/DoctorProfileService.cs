@@ -1857,7 +1857,7 @@ namespace SoowGoodWeb.Services
         public async Task<DoctorProfileDto> GetByUserEmailAsync(string emailAddress)
         {
             var dProfiles = await _doctorProfileRepository.WithDetailsAsync(s => s.Speciality);
-            var item = dProfiles.Where(x => x.MobileNo == emailAddress).FirstOrDefault();
+            var item = dProfiles.Where(x => x.Email == emailAddress).FirstOrDefault();
 
             return ObjectMapper.Map<DoctorProfile, DoctorProfileDto>(item);
         }
