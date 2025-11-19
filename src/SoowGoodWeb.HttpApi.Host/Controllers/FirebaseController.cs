@@ -12,6 +12,8 @@ using SoowGoodWeb.Domain.Service.Models.UserInfo;
 using SoowGoodWeb.Domain.Service.Models.UserRole;
 using SoowGoodWeb.Domain.Service.Repositories;
 using SoowGoodWeb.DtoModels;
+using SoowGoodWeb.InputDto;
+using SoowGoodWeb.Interfaces;
 using SoowGoodWeb.Services;
 using System;
 using System.Collections.Generic;
@@ -172,6 +174,22 @@ namespace SoowGoodWeb.Controllers
                     };
 
                     var userInsertResponse = await _userCommandService.Insert(user);
+                    var doctorProfileInsert = new DoctorProfileInputDto
+                    {
+                        UserId = user.Id,
+                        FullName = name ?? "",
+                        Email = email,
+                        MobileNo = user.PhoneNumber,
+                        CreationTime = DateTime.Now,
+                        IsActive = true,
+                        IsOnline=false,
+                        IsDeleted=false
+                    };
+
+                    var doctorInsertResponse = await _userCommandService.DoctorProfileInsert(doctorProfileInsert);
+
+
+
                     if (!userInsertResponse.Result)
                     {
                         response.is_success = false;
