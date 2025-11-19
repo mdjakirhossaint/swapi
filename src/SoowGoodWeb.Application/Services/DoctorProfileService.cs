@@ -2423,8 +2423,7 @@ namespace SoowGoodWeb.Services
                     itemDoctor.SpecialityId = input.SpecialityId > 0 ? input.SpecialityId : itemDoctor.SpecialityId;
                     itemDoctor.IsActive = input.IsActive;
                     itemDoctor.Expertise = input.Expertise;
-
-
+                    itemDoctor.profileStep = input.profileStep;
                     var item = await _doctorProfileRepository.UpdateAsync(itemDoctor);
                     await _unitOfWorkManager.Current.SaveChangesAsync();
                     result = ObjectMapper.Map<DoctorProfile, DoctorProfileDto>(item);
