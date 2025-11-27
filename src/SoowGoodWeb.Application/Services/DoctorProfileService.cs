@@ -40,6 +40,7 @@ namespace SoowGoodWeb.Services
         private readonly IRepository<DocumentsAttachment> _documentsAttachment;
         private readonly IRepository<FinancialSetup> _financialSetup;
         private readonly IRepository<DoctorFeesSetup> _doctorFeesSetup;
+        private readonly IRepository<Specialization> _specilization;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
         public DoctorProfileService(IRepository<DoctorProfile> doctorProfileRepository
                                     , IUnitOfWorkManager unitOfWorkManager
@@ -48,7 +49,8 @@ namespace SoowGoodWeb.Services
                                     , IRepository<DoctorSchedule> doctorScheduleRepository
                                     , IRepository<DocumentsAttachment> documentsAttachment
                                     , IRepository<FinancialSetup> financialSetup
-                                    , IRepository<DoctorFeesSetup> doctorFeesSetup)
+                                    , IRepository<DoctorFeesSetup> doctorFeesSetup,
+            IRepository<Specialization> specilization)
         {
             _doctorProfileRepository = doctorProfileRepository;
             _unitOfWorkManager = unitOfWorkManager;
@@ -58,6 +60,7 @@ namespace SoowGoodWeb.Services
             _documentsAttachment = documentsAttachment;
             _financialSetup = financialSetup;
             _doctorFeesSetup = doctorFeesSetup;
+            _specilization = specilization;
         }
         /// <summary>
         /// Creating Doctor Profiles with basic info
@@ -109,18 +112,45 @@ namespace SoowGoodWeb.Services
         }
         public async Task<DoctorProfileDto> GetAsync(int id)
         {
-            //var item = await _doctorProfileRepository.GetAsync(x => x.Id == id);
-
-            //return ObjectMapper.Map<DoctorProfile, DoctorProfileDto>(item);
-
-            var item = await _doctorProfileRepository.WithDetailsAsync(s => s.Degrees, sp => sp.Speciality, d => d.DoctorSpecialization);
-
+            // Get doctor profile with related Degrees, Speciality, and DoctorSpecialization
+            var item = await _doctorProfileRepository.WithDetailsAsync(
+                s => s.Degrees,
+                sp => sp.Speciality,
+                d => d.DoctorSpecialization
+            );
             var profile = item.FirstOrDefault(item => item.Id == id);
 
-            var result = profile != null ? ObjectMapper.Map<DoctorProfile, DoctorProfileDto>(profile) : null;
+            if (profile == null)
+                return null;
+
+            var result = ObjectMapper.Map<DoctorProfile, DoctorProfileDto>(profile);
+
+            // Map Degrees
+            var medicalDegrees = await _doctorDegreeRepository.WithDetailsAsync(d => d.Degree);
+            var doctorDegrees = ObjectMapper.Map<List<DoctorDegree>, List<DoctorDegreeDto>>(medicalDegrees.ToList());
+            result.Degrees = doctorDegrees.Where(d => d.DoctorProfileId == profile.Id).ToList();
+
+            // Map SpecialityName
+            result.SpecialityName = profile.SpecialityId > 0 && profile.Speciality != null
+                ? profile.Speciality.SpecialityName
+                : "n/a";
+
+            // Map DoctorSpecialization for this doctor only
+            var doctorSpecializations = await _doctorSpecializationRepository.WithDetailsAsync(s => s.Specialization);
+            var specilization = _specilization.ToListAsync();
+
+            // Filter by this doctor
+            var filteredSpecializations = doctorSpecializations
+                .Where(ds => ds.DoctorProfileId == profile.Id)
+                .ToList();
+
+            // Map to DTO
+            result.DoctorSpecialization = ObjectMapper
+                .Map<List<DoctorSpecialization>, List<DoctorSpecializationDto>>(filteredSpecializations);
 
             return result;
         }
+
         public async Task<DoctorProfileDto> GetDoctorByProfileIdAsync(long id)
         {
 
