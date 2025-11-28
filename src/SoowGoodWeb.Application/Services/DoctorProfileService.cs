@@ -137,7 +137,6 @@ namespace SoowGoodWeb.Services
 
             // Map DoctorSpecialization for this doctor only
             var doctorSpecializations = await _doctorSpecializationRepository.WithDetailsAsync(s => s.Specialization);
-            var specilization = _specilization.ToListAsync();
 
             // Filter by this doctor
             var filteredSpecializations = doctorSpecializations
@@ -2445,6 +2444,7 @@ namespace SoowGoodWeb.Services
                     itemDoctor.Address =  input.Address;
                     itemDoctor.City =  input.City ;
                     itemDoctor.Country =  input.Country;
+                    itemDoctor.profileStep = input.profileStep;
                     itemDoctor.ZipCode = input.ZipCode;
                     itemDoctor.Email =  input.Email;
                     itemDoctor.IdentityNumber =  input.IdentityNumber ;
