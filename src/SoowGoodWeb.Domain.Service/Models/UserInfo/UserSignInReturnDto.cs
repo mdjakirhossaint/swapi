@@ -1,4 +1,5 @@
 ﻿using SoowGood.Domain.Service.Models.UserRole;
+using SoowGoodWeb.Domain.Service.Models.UserInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,5 +42,10 @@ namespace SoowGood.Domain.Service.Models.UserInfo
         public Guid? DeleterId { get; set; }
         public DateTime? DeletionTime { get; set; }
         public UserRoleResponseDto info { get; set; } = new UserRoleResponseDto();
+
+        public static implicit operator UserSignInReturnDto(UserInsertDto v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
