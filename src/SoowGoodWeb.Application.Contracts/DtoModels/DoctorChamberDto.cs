@@ -16,5 +16,7 @@ namespace SoowGoodWeb.DtoModels
         public string? ZipCode { get; set; }
         public string? Country { get; set; }
         public Boolean? IsVisibleOnPrescription { get; set; }
+        public int? DistrictId { get; set; }
+        public int? DivisionId { get; set; }
     }
 }
