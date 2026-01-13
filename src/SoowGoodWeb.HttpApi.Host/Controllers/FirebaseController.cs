@@ -26,16 +26,18 @@ namespace SoowGoodWeb.Controllers
     public class FirebaseController : AbpController
     {
 
-        private readonly FirebaseAuthService _firebaseAuthService;
+        //private readonly FirebaseAuthService _firebaseAuthService;
         private readonly HttpClient _httpClient;
         private readonly IAuthenticationQueryRepository _userService;
         private readonly PasswordHasherService _passwordHasherService;
         private readonly IUserCommanRepository _userCommandService;
         private readonly UserRoleService _userRoleService;
-        public FirebaseController(FirebaseAuthService firebaseAuthService, IAuthenticationQueryRepository userService, PasswordHasherService passwordHasherService,
+        public FirebaseController(
+            //FirebaseAuthService firebaseAuthService, 
+            IAuthenticationQueryRepository userService, PasswordHasherService passwordHasherService,
             IUserCommanRepository userCommandService, UserRoleService userRoleService)
         {
-            _firebaseAuthService = firebaseAuthService;
+            //_firebaseAuthService = firebaseAuthService;
             _httpClient = new HttpClient();
             _userService = userService;
             _passwordHasherService = passwordHasherService;
@@ -44,65 +46,65 @@ namespace SoowGoodWeb.Controllers
         }
 
 
-        [HttpPost("google-login")]
-        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
-        {
-            if (string.IsNullOrWhiteSpace(request.FirebaseIdToken))
-                return BadRequest("Missing Firebase ID token");
+        //[HttpPost("google-login")]
+        //public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+        //{
+        //    if (string.IsNullOrWhiteSpace(request.FirebaseIdToken))
+        //        return BadRequest("Missing Firebase ID token");
 
-            // 1️⃣ Verify Firebase ID Token
-            var firebaseUser = await _firebaseAuthService.VerifyTokenAsync(request.FirebaseIdToken);
-            if (firebaseUser == null)
-                return Unauthorized("Invalid or expired Firebase token");
+        //    // 1️⃣ Verify Firebase ID Token
+        //    var firebaseUser = await _firebaseAuthService.VerifyTokenAsync(request.FirebaseIdToken);
+        //    if (firebaseUser == null)
+        //        return Unauthorized("Invalid or expired Firebase token");
 
-            // 2️⃣ Get Google profile info using Google Access Token
-            dynamic? googleUser = null;
-            if (!string.IsNullOrWhiteSpace(request.GoogleAccessToken))
-            {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", request.GoogleAccessToken);
+        //    // 2️⃣ Get Google profile info using Google Access Token
+        //    dynamic? googleUser = null;
+        //    if (!string.IsNullOrWhiteSpace(request.GoogleAccessToken))
+        //    {
+        //        _httpClient.DefaultRequestHeaders.Authorization =
+        //            new AuthenticationHeaderValue("Bearer", request.GoogleAccessToken);
 
-                var googleResponse = await _httpClient.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
-                if (googleResponse.IsSuccessStatusCode)
-                {
-                    var content = await googleResponse.Content.ReadAsStringAsync();
-                    googleUser = System.Text.Json.JsonSerializer.Deserialize<object>(content);
-                }
-            }
+        //        var googleResponse = await _httpClient.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
+        //        if (googleResponse.IsSuccessStatusCode)
+        //        {
+        //            var content = await googleResponse.Content.ReadAsStringAsync();
+        //            googleUser = System.Text.Json.JsonSerializer.Deserialize<object>(content);
+        //        }
+        //    }
 
-            // 3️⃣ Return unified info
-            var response = new
-            {
-                Message = "Login verified successfully ✅",
-                FirebaseUser = new
-                {
-                    Uid = firebaseUser.Uid,
-                    //Email = firebaseUser.Claims.GetValueOrDefault("email"),
-                    //Name = firebaseUser.Claims.GetValueOrDefault("name"),
-                    //Picture = firebaseUser.Claims.GetValueOrDefault("picture"),
-                },
-                GoogleUser = googleUser
-            };
+        //    // 3️⃣ Return unified info
+        //    var response = new
+        //    {
+        //        Message = "Login verified successfully ✅",
+        //        FirebaseUser = new
+        //        {
+        //            Uid = firebaseUser.Uid,
+        //            //Email = firebaseUser.Claims.GetValueOrDefault("email"),
+        //            //Name = firebaseUser.Claims.GetValueOrDefault("name"),
+        //            //Picture = firebaseUser.Claims.GetValueOrDefault("picture"),
+        //        },
+        //        GoogleUser = googleUser
+        //    };
 
-            return Ok(response);
-        }
+        //    return Ok(response);
+        //}
 
 
-        [HttpGet("secure")]
-        public IActionResult SecureEndpoint()
-        {
-            if (!HttpContext.Items.ContainsKey("FirebaseUser"))
-                return Unauthorized("Missing or invalid token");
+        //[HttpGet("secure")]
+        //public IActionResult SecureEndpoint()
+        //{
+        //    if (!HttpContext.Items.ContainsKey("FirebaseUser"))
+        //        return Unauthorized("Missing or invalid token");
 
-            var user = (FirebaseToken)HttpContext.Items["FirebaseUser"]!;
-            return Ok(new
-            {
-                message = "Firebase Auth Successful ✅",
-                uid = user.Uid,
-                email = user.Claims.ContainsKey("email") ? user.Claims["email"] : null,
-                name = user.Claims.ContainsKey("name") ? user.Claims["name"] : null
-            });
-        }
+        //    var user = (FirebaseToken)HttpContext.Items["FirebaseUser"]!;
+        //    return Ok(new
+        //    {
+        //        message = "Firebase Auth Successful ✅",
+        //        uid = user.Uid,
+        //        email = user.Claims.ContainsKey("email") ? user.Claims["email"] : null,
+        //        name = user.Claims.ContainsKey("name") ? user.Claims["name"] : null
+        //    });
+        //}
         [AllowAnonymous]
         [HttpPost("verify")]
         public async Task<ActionResult<ApiResponse<LoginResponseDto>>> VerifyToken([FromBody] TokenRequest? request)
