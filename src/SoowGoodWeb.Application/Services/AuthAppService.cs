@@ -118,6 +118,8 @@ namespace SoowGoodWeb.Services
                     Message = "Success",
                     AccessToken = token,
                     RefreshToken = refreshToken,
+                    LoginType= "google",
+                    UserEmail=getUser?.Email
                 };
                 ApiResponseHelper.SetSuccessResponse(response, response.results, ApiResponseMessage.common_success_message, null, null);
                 return response;
